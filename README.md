@@ -17,14 +17,14 @@ CREATE TABLE sms (
     id TEXT, -- actually the mobile number
     conversationId INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
 );
 
 CREATE TABLE web (
     id GUID -- for security purposes...
-    conversation_id INT,
+    conversationId INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
 );
 
 ```
