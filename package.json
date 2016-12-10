@@ -3,5 +3,31 @@
   "version": "1.0.0",
   "description": "A skeleton chatbot service",
   "author": "timlonsdale@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "downgrade-root": "^1.2.2",
+    "is-root": "^1.0.0",
+    "moment": "^2.17.1",
+    "pg-promise": "^5.5.0",
+    "twilio": "^2.11.1",
+    "underscore": "^1.8.3",
+    "winston": "^2.3.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-es2016": "^6.16.0",
+    "babel-preset-es2017": "^6.16.0",
+    "browserify": "^13.1.1",
+    "fs-promise": "^1.0.0",
+    "globby": "^6.1.0",
+    "is-root": "^1.0.0",
+    "mkdirp-promise": "^4.0.1",
+    "pug": "^2.0.0-beta6",
+    "replace-ext": "^1.0.0",
+    "uglify-js": "^2.7.4",
+    "underscore": "^1.8.3",
+    "winston": "^2.3.0"
+  }
 }
