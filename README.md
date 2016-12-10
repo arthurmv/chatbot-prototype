@@ -75,7 +75,7 @@ Below is a simple example:
 // interpreter for state "ask_age", with the question - "How old are you?"
 function dummyInterpreter( answer, res ) {
     var age = parseInt( answer ); 
-    if( age === NaN ) {
+    if( _.isNaN(age) ) {
         res.reply = "Didn't quite catch that..";
         //transition to the current state to re-ask the question
         res.state = "ask_age" 
