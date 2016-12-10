@@ -33,9 +33,8 @@ CREATE TABLE web (
 
 Conversations can be conceptualized as state transitions. Each state has:
 
-  1) A question generator, which generates a personalised question based on collected user data (such as name)
-
-  2) An answer interpreter, which takes the user's answer and collected user data and does:
+  1. A question generator, which generates a personalised question based on collected user data (such as name)
+  2. An answer interpreter, which takes the user's answer and collected user data and does:
     * an update to the collected user data, adding any additional information learnt in the answer
     * provides a tailored response to the answer to send back to the user
     * selects the next state to transition to
