@@ -9,6 +9,7 @@
     "express": "^4.14.0",
     "is-root": "^1.0.0",
     "moment": "^2.17.1",
+    "node-uuid": "^1.4.7",
     "pg-promise": "^5.5.0",
     "twilio": "^2.11.1",
     "underscore": "^1.8.3",
