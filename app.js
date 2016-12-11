@@ -18,7 +18,7 @@ function buildOpts( hostname ) {
 
 function attachAPI( app ) {
     app.post( "/api/sms", bodyParser.urlencoded({ extended : true }), promiseHandler( api.sms ) );
-    app.post( "/api/web", bodyParser.json(), promiseHandler( api.web.new ) );
+    app.post( "/api/web", promiseHandler( api.web.new ) );
     app.put( "/api/web/:id", bodyParser.json(), promiseHandler( api.web.receive ) );
 }
 
@@ -40,7 +40,9 @@ function deployMain( factory ) {
 
 async function deploy( env, factory ) {
 
-    schedule.scheduleJob( "0 5 * * * *", async function() {
+    // schedule the cleanup job to run every 2 hours
+    schedule.scheduleJob( "0 0 2 * * *", async function() {
+        winston.info( "purging old conversations.." );
         await model.expire();
         await model.purge();
     });

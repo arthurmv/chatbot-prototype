@@ -23,7 +23,6 @@ $(document).ready( function() {
     qwest.post( "/api/web" )
         .then( function( _xhr, data ) {
             sessionId = data.id;
-            postBot( data.reply );
         });
 
     $("#btn").on( "click", function() {

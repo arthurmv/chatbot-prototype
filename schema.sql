@@ -13,14 +13,14 @@ CREATE TABLE sms (
     id TEXT, -- actually the mobile number
     conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
 );
 
 CREATE TABLE web (
     id TEXT, -- for security purposes this will be an UUID
     conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
 );
 
 ALTER SCHEMA public OWNER TO dbuser;
