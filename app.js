@@ -43,7 +43,7 @@ async function deploy( env, factory ) {
     // schedule the cleanup job to run every 2 hours
     schedule.scheduleJob( "0 0 2 * * *", async function() {
         winston.info( "purging old conversations.." );
-        await model.expire();
+        await model.purge();
         await model.purge();
     });
 
