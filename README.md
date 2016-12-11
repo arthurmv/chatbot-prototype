@@ -41,7 +41,7 @@ Conversations can be conceptualized as state transitions. Each state has:
 
 ### Specific Interface
 
-The entirety of the state graph can be laid out in a dictionary object. Each entry is a unique state, with its key being a unique identifier.
+The entirety of the state graph can be laid out in a dictionary object. Each entry is a unique state, with its key being a unique identifier. The start state has reserved identifier: `init`.
 
 #### Question Generator
 
@@ -65,9 +65,10 @@ The answer interpreter is slightly more tricky - it can be implemented as a func
 
 The `result` object has the following fields:
 
-  * `state` : set this to the state identifier that you wish to transition to. Set this to `null` to signify completion.
+  * `state` : set this to the state identifier that you wish to transition to.
   * `data` : this contains a cloned dictionary of the user's data. Make any revisions/additions to the user data by modifying this.
   * `reply` : set this to be the message that the bot will respond with
+  * `finish` : this function resets the conversation: wiping the user data and resetting the state to `init`
 
 Below is a simple example:
 
