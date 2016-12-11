@@ -9,22 +9,22 @@ CREATE TABLE conversation (
     id SERIAL,
     stage TEXT NULL,
     data TEXT,
-    lastUpdate TIMESTAMP,
+    last_update TIMESTAMP,
     PRIMARY KEY( id )
 );
 
 CREATE TABLE sms (
     id TEXT, -- actually the mobile number
-    conversationId INT,
+    conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
 );
 
 CREATE TABLE web (
     id GUID -- for security purposes...
-    conversationId INT,
+    conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
 );
 
 ```

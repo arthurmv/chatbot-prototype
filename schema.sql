@@ -3,24 +3,24 @@ CREATE SCHEMA public;
 
 CREATE TABLE conversation (
     id SERIAL,
-    stage TEXT NULL,
-    data TEXT,
-    lastUpdate TIMESTAMP,
+    state TEXT NULL,
+    data JSON,
+    last_update TIMESTAMP,
     PRIMARY KEY( id )
 );
 
 CREATE TABLE sms (
     id TEXT, -- actually the mobile number
-    conversationId INT,
+    conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
 );
 
 CREATE TABLE web (
     id TEXT, -- for security purposes this will be an UUID
-    conversationId INT,
+    conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversationId ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
 );
 
 ALTER SCHEMA public OWNER TO dbuser;

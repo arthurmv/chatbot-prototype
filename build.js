@@ -19,7 +19,7 @@ const cfg = {
     frontend : [ "www/js/**.js" ] ,
     mains : [ "www/js/*.js" ],
     pug : [ "www/**.pug" ],
-    assets : [ "www/css/**.css", "www/img/**.*", "www/json/**.json" ]
+    assets : [ "www/css/**.css", "www/img/**.*", "www/json/**.json", "deploy.json" ]
 };
 
 // take an absolute path, and resolve its "staging path" (usually within a /dist folder)

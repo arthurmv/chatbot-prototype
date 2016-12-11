@@ -5,6 +5,7 @@
   "author": "timlonsdale@gmail.com",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "downgrade-root": "^1.2.2",
     "express": "^4.14.0",
     "is-root": "^1.0.0",

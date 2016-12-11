@@ -1,11 +1,13 @@
 const path = require( "path" );
+const bodyParser = require( "body-parser" );
 const winston = require( "winston" );
 const isRoot = require( "is-root" );
 const downgradeRoot = require( "downgrade-root" );
 const express = require( "express" );
 const ServerFactory = require( "vhost-easy" );
 
-const deployCfg = require( ".deploy.json" );
+const model = require( "./lib/model" );
+const deployCfg = require( "./deploy.json" );
 const promiseHandler = require( "./lib/err" );
 const api = require( "./lib/api" );
 
@@ -23,14 +25,18 @@ function deployWwwRedir( factory ) {
 // deploy the actual application
 function deployMain( factory ) {
     var app = express();
+    app.use( bodyParser.json() );
     app.use( express.static( path.join( __dirname, "www" ) ) );
     app.post( "/api/sms", promiseHandler( api.sms ) );
     app.post( "/api/web", promiseHandler( api.web.new ) );
-    app.put( "/api/web/:id", promiseHandler( api.web.id ) );
+    app.put( "/api/web/:id", promiseHandler( api.web.receive ) );
     factory.attach( app, buildOpts( "www." + deployCfg.host ) );
 }
 
 async function deploy( _env, factory ) {
+
+    // initialize the database
+    model.initDb();
 
     // deploy a naked -> www redirecter
     deployWwwRedir( factory );
