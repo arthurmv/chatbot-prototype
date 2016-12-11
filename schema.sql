@@ -3,7 +3,7 @@ CREATE SCHEMA public;
 
 CREATE TABLE conversation (
     id SERIAL,
-    state TEXT NULL,
+    state TEXT,
     data JSON,
     last_update TIMESTAMP,
     PRIMARY KEY( id )
