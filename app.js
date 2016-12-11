@@ -16,10 +16,9 @@ function buildOpts( hostname ) {
 }
 
 function attachAPI( app ) {
-    app.use( bodyParser.json() );
-    app.post( "/api/sms", promiseHandler( api.sms ) );
-    app.post( "/api/web", promiseHandler( api.web.new ) );
-    app.put( "/api/web/:id", promiseHandler( api.web.receive ) );
+    app.post( "/api/sms", bodyParser.urlencoded(), promiseHandler( api.sms ) );
+    app.post( "/api/web", bodyParser.json(), promiseHandler( api.web.new ) );
+    app.put( "/api/web/:id", bodyParser.json(), promiseHandler( api.web.receive ) );
 }
 
 // create a server that redirects naked domains to a www. prefix
@@ -38,7 +37,7 @@ function deployMain( factory ) {
     factory.attach( app, buildOpts( "www." + deployCfg.host ) );
 }
 
-async function deploy( _env, factory ) {
+async function deploy( env, factory ) {
 
     // initialize the database
     model.initDb();
