@@ -15,9 +15,17 @@ function buildOpts( hostname ) {
     return { hostname : hostname, port : 80, secure : false };
 }
 
+function attachAPI( app ) {
+    app.use( bodyParser.json() );
+    app.post( "/api/sms", promiseHandler( api.sms ) );
+    app.post( "/api/web", promiseHandler( api.web.new ) );
+    app.put( "/api/web/:id", promiseHandler( api.web.receive ) );
+}
+
 // create a server that redirects naked domains to a www. prefix
 function deployWwwRedir( factory ) {
     var wwwRedir = express();
+    attachAPI( wwwRedir );
     wwwRedir.use( (rq,rs) => rs.redirect( rq.protocol + "://www." + deployCfg.host + rq.originalUrl ) );
     factory.attach( wwwRedir, buildOpts( deployCfg.host ) );
 }
@@ -25,11 +33,8 @@ function deployWwwRedir( factory ) {
 // deploy the actual application
 function deployMain( factory ) {
     var app = express();
-    app.use( bodyParser.json() );
+    attachAPI( app );
     app.use( express.static( path.join( __dirname, "www" ) ) );
-    app.post( "/api/sms", promiseHandler( api.sms ) );
-    app.post( "/api/web", promiseHandler( api.web.new ) );
-    app.put( "/api/web/:id", promiseHandler( api.web.receive ) );
     factory.attach( app, buildOpts( "www." + deployCfg.host ) );
 }
 
