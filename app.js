@@ -1,4 +1,5 @@
 const path = require( "path" );
+const schedule = require( "node-schedule" );
 const bodyParser = require( "body-parser" );
 const winston = require( "winston" );
 const isRoot = require( "is-root" );
@@ -38,6 +39,11 @@ function deployMain( factory ) {
 }
 
 async function deploy( env, factory ) {
+
+    schedule.scheduleJob( "0 5 * * * *", async function() {
+        await model.expire();
+        await model.purge();
+    });
 
     // initialize the database
     model.initDb();
