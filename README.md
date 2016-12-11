@@ -7,8 +7,8 @@ Proposed Spec
 
 CREATE TABLE conversation (
     id SERIAL,
-    stage TEXT NULL,
-    data TEXT,
+    state TEXT NULL,
+    data JSON,
     last_update TIMESTAMP,
     PRIMARY KEY( id )
 );
@@ -21,7 +21,7 @@ CREATE TABLE sms (
 );
 
 CREATE TABLE web (
-    id GUID -- for security purposes...
+    id TEXT, -- for security purposes this will be an UUID
     conversation_id INT,
     PRIMARY KEY( id ),
     FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
