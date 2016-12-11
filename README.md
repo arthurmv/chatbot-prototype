@@ -9,7 +9,7 @@ CREATE TABLE conversation (
     id SERIAL,
     state TEXT NULL,
     data JSON,
-    last_update TIMESTAMP,
+    last_update TIMESTAMP, -- use this to clean up old convos
     PRIMARY KEY( id )
 );
 
@@ -17,14 +17,14 @@ CREATE TABLE sms (
     id TEXT, -- actually the mobile number
     conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
 );
 
 CREATE TABLE web (
     id TEXT, -- for security purposes this will be an UUID
     conversation_id INT,
     PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id )
+    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
 );
 
 ```
@@ -55,6 +55,8 @@ function dummyQuestion( userData ) {
 }
 ```
 
+If there is no question to ask (i.e. you are in a special start or end state), the generator should return `null`.
+
 *Instead of returning a string, you could allow for the option to provide overrides for specific vectors. If the question is multiple choice,
 you could send the choices to a web client in a structured form, which in turn could render the question as a set of buttons instead of just text. 
 This would reduce the scope for mis-interpreting the answer.*
@@ -67,8 +69,7 @@ The `result` object has the following fields:
 
   * `state` : set this to the state identifier that you wish to transition to.
   * `data` : this contains a cloned dictionary of the user's data. Make any revisions/additions to the user data by modifying this.
-  * `reply` : set this to be the message that the bot will respond with
-  * `finish` : this function resets the conversation: wiping the user data and resetting the state to `init`
+  * `reply` : set this to be the message that the bot will respond with (if a response is warranted)
 
 Below is a simple example:
 
@@ -82,6 +83,7 @@ function dummyInterpreter( answer, res ) {
         res.state = "ask_age" 
     } else {
        res.reply = "Wow, ${age}, you're ancient!"; 
+       res.data.age = age;
        res.state = "ask_gender";
     }
 }
