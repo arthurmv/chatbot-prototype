@@ -1,6 +1,7 @@
 const path = require( "path" );
 const schedule = require( "node-schedule" );
 const bodyParser = require( "body-parser" );
+const _ = require( "underscore" );
 const winston = require( "winston" );
 const isRoot = require( "is-root" );
 const downgradeRoot = require( "downgrade-root" );
@@ -12,49 +13,37 @@ const deployCfg = require( "./deploy.json" );
 const promiseHandler = require( "./lib/err" );
 const api = require( "./lib/api" );
 
-function buildOpts( hostname ) {
-    return { hostname : hostname, port : 80, secure : false };
+// redirect all trafic to www.hostname on either http/https
+function wwwRedirect( req, res ) {
+    var url = req.protocol + "://www." + deployCfg.hostname + req.originalUrl;
+    res.redirect( url );
 }
 
-function attachAPI( app ) {
+// deploy a naked -> www redirecter
+function deployWwwRedir( factory ) {
+    factory.attach( express().use( wwwRedirect ), deployCfg );
+}
+
+// deploy the static site content
+function deployMain( factory ) {
+    var app = express().use( express.static( path.join( __dirname, "www" ) ) );
     app.post( "/api/sms", bodyParser.urlencoded({ extended : true }), promiseHandler( api.sms ) );
     app.post( "/api/web", promiseHandler( api.web.new ) );
     app.put( "/api/web/:id", bodyParser.json(), promiseHandler( api.web.receive ) );
+    factory.attach( app, _.extend( {}, deployCfg, { hostname : "www." + deployCfg.hostname } ) );
 }
 
-// create a server that redirects naked domains to a www. prefix
-function deployWwwRedir( factory ) {
-    var wwwRedir = express();
-    attachAPI( wwwRedir );
-    wwwRedir.use( (rq,rs) => rs.redirect( rq.protocol + "://www." + deployCfg.host + rq.originalUrl ) );
-    factory.attach( wwwRedir, buildOpts( deployCfg.host ) );
+async function purgeOld() {
+    winston.info( "purging old conversations.." );
+    await model.purge();
 }
 
-// deploy the actual application
-function deployMain( factory ) {
-    var app = express();
-    attachAPI( app );
-    app.use( express.static( path.join( __dirname, "www" ) ) );
-    factory.attach( app, buildOpts( "www." + deployCfg.host ) );
-}
-
-async function deploy( env, factory ) {
-
-    // schedule the cleanup job to run every hour
-    schedule.scheduleJob( "0 * * * *", async function() {
-        winston.info( "purging old conversations.." );
-        await model.purge();
-    });
-
-    // initialize the database
+// deploy the whole bloody lot
+async function deploy( factory ) {
     model.initDb();
-
-    // deploy a naked -> www redirecter
     deployWwwRedir( factory );
-
-    // deploy the main application
     deployMain( factory );
-
+    schedule.scheduleJob( "0 * * * *", purgeOld );
 }
 
 if( require.main == module ) {
@@ -62,7 +51,7 @@ if( require.main == module ) {
         // we won't be able to bind to ports 80 & 443 if we aren't root
         throw new Error( "need root privileges to bind to ports 80 & 443" );
     var factory = new ServerFactory();
-    deploy( null, factory ).then( function() {
+    deploy( factory ).then( function() {
         // to stop an errant server from doing serious damage to the instance
         // best to remove priviliges ASAP...
         winston.info( "servers have been set up - removing root priviliges" );
