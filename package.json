@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "connect-promiser": "^1.0.17",
     "downgrade-root": "^1.2.2",
     "express": "^4.14.0",
     "is-root": "^1.0.0",
@@ -15,6 +16,7 @@
     "node-uuid": "^1.4.7",
     "pg-promise": "^5.5.0",
     "qwest": "^4.4.5",
+    "toastr": "^2.1.2",
     "twilio": "^2.11.1",
     "underscore": "^1.8.3",
     "vhost-easy": "^1.0.9",
@@ -27,6 +29,7 @@
     "babel-preset-es2016": "^6.16.0",
     "babel-preset-es2017": "^6.16.0",
     "browserify": "^13.1.1",
+    "ejs": "^2.5.5",
     "fs-promise": "^1.0.0",
     "globby": "^6.1.0",
     "is-root": "^1.0.0",
