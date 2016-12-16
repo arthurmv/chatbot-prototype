@@ -1,33 +1,20 @@
-Proposed Spec
+Chatbot Prototype
 =============
 
-## Data Model
+## Uage
 
-```sql
+Setup is straightforward:
 
-CREATE TABLE conversation (
-    id SERIAL,
-    state TEXT NULL,
-    data JSON,
-    last_update TIMESTAMP, -- use this to clean up old convos
-    PRIMARY KEY( id )
-);
-
-CREATE TABLE sms (
-    id TEXT, -- actually the mobile number
-    conversation_id INT,
-    PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
-);
-
-CREATE TABLE web (
-    id TEXT, -- for security purposes this will be an UUID
-    conversation_id INT,
-    PRIMARY KEY( id ),
-    FOREIGN KEY( conversation_id ) REFERENCES conversation( id ) ON DELETE CASCADE
-);
-
-```
+  1. clone the repository
+  2. run `npm install`
+  3. create a `deploy.json` file that contains the following keys:
+    1. `hostname` - the target domain
+    2. `logLevel` - the minimum log level to display (`info` or `debug` usually)
+    3. `db` - the postgresql db connection string. I.e. `postgres://user:pwd@host:port/db`
+    4. `port` - set this to 80
+    5. `secure` - set this to `false`
+  4. build the project by doing `node build.js`
+  5. run the project by doing `node dist/app.js` - you'll have to do this as sudo to bind to port `80`
 
 ## ChatBot Mechanics
 
