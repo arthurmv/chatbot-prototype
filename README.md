@@ -10,7 +10,7 @@ Setup is straightforward:
   3. create a `deploy.json` file that contains the following keys:
     1. `hostname` - the target domain
     2. `logLevel` - the minimum log level to display (`info` or `debug` usually)
-    3. `db` - the postgresql db connection string. I.e. `postgres://user:pwd@host:port/db`
+    3. `db` - the postgresql db connection string. I.e. `postgres://user:pwd@host:port/db` (schem can be found in `schema.sql`)
     4. `port` - set this to 80
     5. `secure` - set this to `false`
   4. build the project by doing `node build.js`
