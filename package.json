@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "A skeleton chatbot service",
   "author": "timlonsdale@gmail.com",
+  "main" : "dist/app.js",
+  "scripts" : {
+    "start" : "node dist/app.js",
+    "build" : "node build.js"
+  },
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.2",
