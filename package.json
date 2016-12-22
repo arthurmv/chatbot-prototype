@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "A skeleton chatbot service",
   "author": "timlonsdale@gmail.com",
-  "main" : "dist/app.js",
-  "scripts" : {
-    "start" : "node dist/app.js",
-    "build" : "node build.js"
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "node dist/app.js",
+    "build": "node build.js"
   },
   "license": "MIT",
   "dependencies": {
+    "auto-builder": "^1.1.17",
     "body-parser": "^1.15.2",
     "connect-promiser": "^1.0.17",
     "downgrade-root": "^1.2.2",
