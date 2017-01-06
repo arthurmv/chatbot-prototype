@@ -47,15 +47,13 @@ async function deploy( factory ) {
 
 if( require.main == module ) {
     winston.level = deployCfg.logLevel;
-    if( !isRoot() )
-        // we won't be able to bind to ports 80 & 443 if we aren't root
-        throw new Error( "need root privileges to bind to ports 80 & 443" );
     var factory = new ServerFactory();
     deploy( factory ).then( function() {
         // to stop an errant server from doing serious damage to the instance
         // best to remove priviliges ASAP...
         winston.info( "servers have been set up - removing root priviliges" );
-        downgradeRoot();
+        if( isRoot() )
+            downgradeRoot();
     });
 }
 else
