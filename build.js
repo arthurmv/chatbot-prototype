@@ -1,103 +1,135 @@
 const babel = require("babel-core");
+const minimatch = require( "minimatch" );
+const globby = require( "globby" );
+const ejs = require( "ejs" );
 const path = require( "path" );
 const auto = require( "auto-builder" );
-const _ = require( "underscore" );
 const fsp = require("fs-promise");
 const ugly = require( "uglify-js" );
 const browserify = require("browserify");
 const winston = require("winston");
 const pug = require("pug");
 
-const operations = [
-    {
-        pipeline : [],
-        filter : [ "deploy.json" ],
-        target : "dist/<%= dir %>/<%= base %><%= ext %>"
-    },
-    {
-        pipeline : [ compileToES7 ],
-        filter : [ "*.js", "lib/**/*.js" ],
-        target : "dist/<%= dir %>/<%= base %><%= ext %>"
-    },
-    {
-        pipeline : [ compileToES7, compileToES6, compileToES5 ],
-        filter : [ "www/**/*.js" ],
-        target : "dist/<%= dir %>/<%= base %><%= ext %>"
-    },
-    {
-        pipeline : [ compileToHtml ],
-        filter : [ "www/**/*.pug" ],
-        target : "dist/<%= dir %>/<%= base %>.html"
-    },
-    {
-        pipeline : [ bundle, uglify ],
-        filter : [ "dist/www/**/*.js" ],
-        target : "<%= dir %>/<%= base %><%= ext %>"
-    }
-];
-
-// transform our pug files into html
-function compileToHtml( filePath ) {
-    winston.debug( "compiling pug file", filePath );
-    return fsp.readFile( filePath )
-        .then( data => pug.render( data, { filename : filePath, basedir : __dirname } ) )
-        .then( data => fsp.writeFile( filePath, data ) );
+function compileToHtml( src, tgt ) {
+    winston.debug( "compiling to html", src, tgt );
+    return fsp.readFile( src )
+        .then( data => pug.render( data, { filename : src, basedir : __dirname } ) )
+        .then( data => fsp.writeFile( tgt, data ) );
 }
 
-// perform babel compilation from es17 -> es16
-// this is sufficient for node to run - so backend doesn't need to be compiled down further
-function compileToES7( filePath ) {
-    winston.debug( "compiling ES8 to ES7 file", filePath );
+function compileToES7( src, tgt ) {
+    winston.debug( "compiling to es7", src, tgt );
     var opts = {  presets : [ require.resolve( "babel-preset-es2017" ) ] };
-    return fsp.readFile( filePath )
+    return fsp.readFile( src )
         .then( data => babel.transform( data, opts ).code )
-        .then( data => fsp.writeFile( filePath, data ) );
+        .then( data => fsp.writeFile( tgt, data ) );
 }
 
-// perform babel compilation from es16 -> es5 in two steps
-// we can run our front-end js on all browsers at this point
-function compileToES6( filePath ) {
-    winston.debug( "compiling ES7 -> ES6 file", filePath );
-    var opts = { presets : [ require.resolve( "babel-preset-es2016" ) ] };
-    return fsp.readFile( filePath )
-        .then( data => babel.transform( data, opts ).code )
-        .then( data => fsp.writeFile( filePath, data ) );
-}
-
-function compileToES5( filePath ) {
-    winston.debug( "compiling ES6 -> ES5 file", filePath );
-    var opts = {
+function compileToES5( src, tgt ) {
+    winston.debug( "compiling to es5 via es6", src, tgt );
+    var es6Opts = { presets : [ require.resolve( "babel-preset-es2016" ) ] };
+    var es5Opts = {
         presets : [ require.resolve( "babel-preset-es2015" ) ],
         plugins : [ [ require.resolve( "babel-plugin-transform-runtime" ), { regenerator : true } ] ] 
     };
-    return fsp.readFile( filePath )
-        .then( data => babel.transform( data, opts ).code )
-        .then( data => fsp.writeFile( filePath, data ) );
+    return fsp.readFile( src )
+        .then( data => babel.transform( data, es6Opts ).code )
+        .then( data => babel.transform( data, es5Opts ).code )
+        .then( data => fsp.writeFile( tgt, data ) );
 }
 
-// minification (for front-end code)
-function uglify( filePath ) {
-    winston.debug( "uglifying file", filePath );
-    return fsp.readFile( filePath, "utf-8" )
-        .then( data => ugly.minify( data, { fromString : true } ).code )
-        .then( data => fsp.writeFile( filePath, data ) );
-}
-
-// browserification (condense all requires into a single file -> only a single js file dependency per page)
-function bundle( filePath ) {
-    filePath = path.resolve( filePath );
-    winston.debug( "bundling file", filePath );
+function bundle( src, tgt ) {
+    winston.debug( "bundling js", src, tgt );
     var base = new Promise( function( res, rej ) {
         var b = browserify();
-        b.add( filePath );
+        b.add( path.resolve( src ) );
         b.bundle( (err,code) => err ? rej( err ) : res( code ) );
     });
-    return base.then( data => fsp.writeFile( filePath, data ) );
+    return base
+        .then( data => data.toString( "utf8" ) )
+        .then( data => ugly.minify( data, { fromString : true } ).code )
+        .then( data => fsp.writeFile( tgt, data ) );
+}
+
+function transform( p, templ ) {
+    var ext = path.extname( p );
+    var base = path.basename( p, ext );
+    var dir = path.dirname( p );
+    return ejs.render( templ, { ext, base, dir } );
+}
+
+function generate() {
+
+
+    return Promise.resolve()
+        .then( () => globby( [ "*.{js,json}", "lib/**/*.js", "www/**/*.{js,html}" ] ) )
+        .then( function( paths ) {
+
+            var base = {
+                "dist/build" : { dependencies : [] },
+                "dist/clean" : { dependencies : [ "dist/.clean" ], recipe : () => fsp.emptyDir( "dist" ) },
+                "dist/.clean" : {}
+            };
+
+            var frontLibDeps = [];
+
+            for( let src of paths ) {
+                // is a dependency to front end main js files as could be required via browserify 
+                if( minimatch( src, "www/js/**/*.js" ) )
+                    frontLibDeps.push( transform( src, "dist/<%= dir %>/<%= base %>.js" ) );
+            }
+
+            for( let src of paths ) {
+                // is a javascript file
+                if( minimatch( src, "**/*.js" ) ) {
+                    let tgt = transform( src, "dist/<%= dir %>/<%= base %>.js" );
+                    base[ "dist/build" ].dependencies.push( tgt );
+                    // is it a front end file - if so we must go from es7 -> es5 -> potentially bundle
+                    if( minimatch( src, "www/**/*.js" ) ) {
+                        let es7 = transform( src, "dist/<%= dir %>/<%= base %>.js.es7" );
+                        base[ es7 ] = { dependencies : [ src ], recipe : () => compileToES7( src, es7 ) };
+                        // is it a library file - if so just compile to es5 and finish
+                        if( minimatch( src, "www/js/**/*.js" ) )
+                            base[ tgt ] = { dependencies : [ es7 ], recipe : () => compileToES5( es7, tgt ) };
+                        // otherwise, we must also bundle..
+                        else {
+                            let es5 = transform( src, "dist/<%= dir %>/<%= base %>.js.es5" );
+                            base[ es5 ] = { dependencies : [ es7 ], recipe : () => compileToES5( es7, es5 ) };
+                            base[ tgt ] = { dependencies : [ es5 ].concat( frontLibDeps ), recipe : () => bundle( es5, tgt ) };
+                        }
+                    // otherwise its a simple es7 compilation and we're done
+                    } else
+                        base[ tgt ] = { dependencies : [ src ], recipe : () => compileToES7( src, tgt ) };
+                // is a pug file (to go to html)
+                } else if( minimatch( src, "www/**/*.pug" ) ) {
+                    let tgt = transform( src, "dist/<%= dir %>/<%= base %>.html" );
+                    base[ "dist/build" ].dependencies.push( tgt );
+                    base[ tgt ] = { dependencies : [ src ], recipe : () => compileToHtml( src, tgt ) };
+                // is a remaining static asset to transfer
+                } else {
+                    let tgt = transform( src, "dist/<%= dir %>/<%= base %><%= ext %>" );
+                    base[ "dist/build" ].dependencies.push( tgt );
+                    base[ tgt ] = { dependencies : [ src ], recipe : () => fsp.copy( src, tgt ) };
+
+                }
+            }
+            return base;
+        });
 }
 
 if( require.main === module ) {
+
     winston.level = "debug";
-    _.reduce( operations, (l,op) => l.then( () => auto( op, {} ) ), Promise.resolve() );
+
+    Promise.resolve()
+        .then( () => generate() )
+        .then( recipes => auto( recipes ) )
+        .then( runner => runner( process.argv.slice(2) ) )
+        .then( () => winston.info( "auto-build completed" ) )
+        .catch( function( err ) {
+            winston.error( err );
+            process.exit(1);
+        });
 }
 else
-    module.exports = operations;
+    module.exports = generate;

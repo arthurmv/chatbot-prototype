@@ -1,6 +1,5 @@
 const path = require( "path" );
 const schedule = require( "node-schedule" );
-const _ = require( "underscore" );
 const winston = require( "winston" );
 const isRoot = require( "is-root" );
 const downgradeRoot = require( "downgrade-root" );
@@ -19,7 +18,11 @@ function wwwRedirect( req, res ) {
 
 // deploy a naked -> www redirecter
 function deployWwwRedir( factory ) {
-    factory.attach( express().use( wwwRedirect ), deployCfg );
+    factory.attach( express().use( wwwRedirect ), {
+        port : deployCfg.port,
+        hostname : deployCfg.hostname,
+        secure : false
+    } );
 }
 
 // deploy the static site content
@@ -27,7 +30,11 @@ function deployMain( factory ) {
     var app = express()
         .use( express.static( path.join( __dirname, "www" ) ) )
         .use( "/api", api() );
-    factory.attach( app, _.extend( {}, deployCfg, { hostname : "www." + deployCfg.hostname } ) );
+    factory.attach( app, {
+        port : deployCfg.port,
+        hostname : "www." + deployCfg.hostname,
+        secure : false
+    });
 }
 
 // deploy the whole bloody lot

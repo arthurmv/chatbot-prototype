@@ -11,10 +11,9 @@ Setup is straightforward:
     1. `hostname` - the target domain
     2. `logLevel` - the minimum log level to display (`info` or `debug` usually)
     3. `db` - the postgresql db connection string. I.e. `postgres://user:pwd@host:port/db` (schema can be found in `schema.sql`)
-    4. `port` - set this to 80
-    5. `secure` - set this to `false`
-  4. build the project by doing `node build.js`
-  5. run the project by doing `node dist/app.js` - you'll have to do this as sudo to bind to port `80`
+    4. `port` - set this to whatever you want
+  4. build the project by doing `node build.js dist/build`
+  5. run the project by doing `npm start` you'll have to do this as sudo to bind to port `80`
 
 ## ChatBot Mechanics
 

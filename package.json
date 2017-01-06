@@ -5,8 +5,7 @@
   "author": "timlonsdale@gmail.com",
   "main": "dist/app.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "build": "node build.js"
+    "start": "node dist/app.js"
   },
   "license": "MIT",
   "dependencies": {
